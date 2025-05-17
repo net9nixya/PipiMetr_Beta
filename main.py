@@ -7,7 +7,7 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ParseMode, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.dispatcher.filters import Command
 from config import BOT_TOKEN, MAX_LEVEL
-from keyboard import start_private_keyboard, top_keyboard
+from keyboard import start_private_keyboard, top_keyboard, submit_idea_keyboard
 
 bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.HTML)
 dp = Dispatcher(bot)
@@ -115,7 +115,8 @@ async def cmd_info(message: types.Message):
         "/me — профиль\n"
         "/stats — статистика группы\n"
         "/top — топ игроков и чатов\n"
-        "/help — помощь по боту"
+        "/help — помощь по боту",
+        reply_markup=submit_idea_keyboard
     )
 
 @dp.message_handler(commands=["dick", "dick@PipiMetrBot"])
