@@ -148,7 +148,7 @@ async def cmd_dick(message: types.Message):
 
 @dp.message_handler(commands=["me_tea", "me_tea@PipiMetrBot", "profile_tea", "profile_tea@PipiMetrBot"])
 async def cmd_me(message: types.Message):
-    row = get_user(message.from_user.id)
+    row = get_tea_user(message.from_user.id)
     if row:
         username, size, total, last, level, exp = row
         if last:
@@ -173,7 +173,7 @@ async def cmd_me(message: types.Message):
 
 @dp.message_handler(commands=["stats_tea", "stats_tea@PipiMetrBot"])
 async def cmd_stats(message: types.Message):
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH_TEA)
     c = conn.cursor()
     c.execute("SELECT username, total_growth FROM pipi ORDER BY total_growth DESC LIMIT 10")
     top = c.fetchall()

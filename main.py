@@ -194,10 +194,10 @@ async def cmd_top(message: types.Message):
     await message.answer("🍆 ТОП лучших игроков и чатов (В разработке: @Project_X)", reply_markup=top_keyboard)
     
 #TEA====================================================================================================================
-DB_PATH = "tea.db"
+DB_PATH_TEA = "tea.db"
 
-def init_db():
-    conn = sqlite3.connect(DB_PATH)
+def init_tea_db():
+    conn = sqlite3.connect(DB_PATH_TEA)
     c = conn.cursor()
     c.execute('''
         CREATE TABLE IF NOT EXISTS tea (
@@ -213,8 +213,8 @@ def init_db():
     conn.commit()
     conn.close()
 
-def can_grow(user_id):
-    conn = sqlite3.connect(DB_PATH)
+def can_drink(user_id):
+    conn = sqlite3.connect(DB_PATH_TEA)
     c = conn.cursor()
     c.execute("SELECT last_used FROM tea WHERE user_id = ?", (user_id,))
     row = c.fetchone()
@@ -224,19 +224,19 @@ def can_grow(user_id):
     last_used = datetime.fromisoformat(row[0])
     return datetime.now() - last_used >= timedelta(hours=1)
 
-def get_luck_multiplier(level: int) -> float:
+def get_luck_tea_multiplier(level: int) -> float:
     return min(1.0 + level * 0.02, 1.2)
 
-def get_user(user_id):
-    conn = sqlite3.connect(DB_PATH)
+def get_tea_user(user_id):
+    conn = sqlite3.connect(DB_PATH_TEA)
     c = conn.cursor()
     c.execute("SELECT username, size, total_growth, last_used, level, exp FROM tea WHERE user_id = ?", (user_id,))
     row = c.fetchone()
     conn.close()
     return row
 
-def update_growth(user_id, username):
-    conn = sqlite3.connect(DB_PATH)
+def update_tea_growth(user_id, username):
+    conn = sqlite3.connect(DB_PATH_TEA)
     c = conn.cursor()
     c.execute("SELECT level, exp, size, total_growth FROM tea WHERE user_id = ?", (user_id,))
     row = c.fetchone()
@@ -249,7 +249,7 @@ def update_growth(user_id, username):
     else:
         level, exp, size, total = row
 
-    luck = get_luck_multiplier(level)
+    luck = get_luck_tea_multiplier(level)
     growth = round(random.uniform(0.5, 1.2) * luck, 2)
     new_size = round(size + growth, 2)
     new_total = round(total + growth, 2)
@@ -278,7 +278,7 @@ def update_growth(user_id, username):
     return growth, new_size, new_level
 
 @dp.message_handler(commands=["start_tea", "start_tea@PipiMetrBot"])
-async def cmd_start(message: types.Message):
+async def cmd_start_tea(message: types.Message):
     if message.chat.type == "private":
         await message.answer(
             "Привет! Чайометр — весёлый бот для чатов, который помогает измерять прогресс!\n\n"
@@ -290,7 +290,7 @@ async def cmd_start(message: types.Message):
         await message.answer("Бот активен! Используйте /drink чтобы начать игру!")
 
 @dp.message_handler(commands=["info_tea", "help_tea", "info_tea@PipiMetrBot", "help_tea@PipiMetrBot"])
-async def cmd_info(message: types.Message):
+async def cmd_info_tea(message: types.Message):
     await message.answer(
         "Команды бота:\n"
         "/start_tea — запустить бота\n"
@@ -303,7 +303,7 @@ async def cmd_info(message: types.Message):
     )
 
 @dp.message_handler(commands=["drink", "drink@PipiMetrBot"])
-async def cmd_dick(message: types.Message):
+async def cmd_drink(message: types.Message):
     if message.chat.type == "private":
         await message.answer("Эта команда работает только в группах. Добавь меня в чат!")
         return
@@ -311,15 +311,15 @@ async def cmd_dick(message: types.Message):
     user_id = message.from_user.id
     username = message.from_user.username or message.from_user.full_name
 
-    if can_grow(user_id):
-        growth, new_size, level = update_growth(user_id, username)
+    if can_drink(user_id):
+        growth, new_size, level = update_tea_growth(user_id, username)
         await message.reply(
             f"🧋 <b>{username}</b>, ты выпил <b>{growth} л.</b>!\n"
             f"🍵 Всего: <b>{new_size} л.</b>\n"
             f"🎖 Уровень: <b>{level}</b>"
         )
     else:
-        row = get_user(user_id)
+        row = get_tea_user(user_id)
         if row:
             username, size, *_ = row
             await message.reply(
@@ -330,8 +330,8 @@ async def cmd_dick(message: types.Message):
             await message.reply("Ты ещё не начал игру! Используй /dick")
 
 @dp.message_handler(commands=["me_tea", "me_tea@PipiMetrBot", "profile_tea", "profile_tea@PipiMetrBot"])
-async def cmd_me(message: types.Message):
-    row = get_user(message.from_user.id)
+async def cmd_me_tea(message: types.Message):
+    row = get_tea_user(message.from_user.id)
     if row:
         username, size, total, last, level, exp = row
         if last:
@@ -355,17 +355,17 @@ async def cmd_me(message: types.Message):
         await message.answer("Ты ещё не начал игру! Напиши /drink")
 
 @dp.message_handler(commands=["stats_tea", "stats_tea@PipiMetrBot"])
-async def cmd_stats(message: types.Message):
-    conn = sqlite3.connect(DB_PATH)
+async def cmd_stats_tea(message: types.Message):
+    conn = sqlite3.connect(DB_PATH_TEA)
     c = conn.cursor()
-    c.execute("SELECT username, total_growth FROM pipi ORDER BY total_growth DESC LIMIT 10")
+    c.execute("SELECT username, total_growth FROM tea ORDER BY total_growth DESC LIMIT 10")
     top = c.fetchall()
     conn.close()
 
     if top:
         text = "📊 Топ 10 игроков чата:\n\n"
         for i, (user, growth) in enumerate(top, 1):
-            text += f"{i}. {user} — {round(growth, 2)} см\n"
+            text += f"{i}. {user} — {round(growth, 2)} л.\n"
         text += "\nТОП лучших игроков — /top"
     else:
         text = "Нет данных. Используй /drink, чтобы начать игру!"
@@ -373,9 +373,10 @@ async def cmd_stats(message: types.Message):
     await message.answer(text)
 
 @dp.message_handler(commands=["top_tea", "top_tea@PipiMetrBot"])
-async def cmd_top(message: types.Message):
+async def cmd_top_tea(message: types.Message):
     await message.answer("🧋 ТОП лучших игроков и чатов (В разработке: @Project_X)", reply_markup=tea_top_keyboard)
 
 if __name__ == "__main__":
     init_db()
+    init_tea_db()
     executor.start_polling(dp, skip_updates=True)

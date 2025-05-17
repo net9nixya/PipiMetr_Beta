@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 start_private_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="➕ Добавить ПипиМетр в чатик", url="https://t.me/PipiMetrBot?startgroup=true")],
+    [InlineKeyboardButton(text="➕ Добавить Метр бот в чатик", url="https://t.me/MetrBot?startgroup=true")],
     [InlineKeyboardButton(text="💡 Предложить идею", url="https://t.me/Project_X")]
 ])
 top_keyboard = InlineKeyboardMarkup(inline_keyboard=[
