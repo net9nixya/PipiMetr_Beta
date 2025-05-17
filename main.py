@@ -3,16 +3,14 @@ import random
 import sqlite3
 from datetime import datetime, timedelta
 
-from aiogram import Bot, Dispatcher, types, F
-from aiogram.client.default import DefaultBotProperties
-from aiogram.filters import Command
-from aiogram.enums import ChatType
-
+from aiogram import Bot, Dispatcher, executor, types
+from aiogram.types import ParseMode, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.dispatcher.filters import Command
 from config import BOT_TOKEN, MAX_LEVEL
 from keyboard import start_private_keyboard, top_keyboard
 
-bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
-dp = Dispatcher()
+bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.HTML)
+dp = Dispatcher(bot)
 DB_PATH = "pipi.db"
 
 def init_db():
@@ -95,9 +93,10 @@ def update_growth(user_id, username):
     conn.commit()
     conn.close()
     return growth, new_size, new_level
-@dp.message(Command("start", "start@PipiMetrBot"))
+
+@dp.message_handler(commands=["start", "start@PipiMetrBot"])
 async def cmd_start(message: types.Message):
-    if message.chat.type == ChatType.PRIVATE:
+    if message.chat.type == "private":
         await message.answer(
             "Привет! ПипиМетр — весёлый бот для чатов, который помогает измерять прогресс!\n\n"
             "Раз в час игрок может использовать команду /dick, чтобы увеличить свою пипиську 📏\n\n"
@@ -107,7 +106,7 @@ async def cmd_start(message: types.Message):
     else:
         await message.answer("Бот активен! Используйте /dick чтобы начать игру!")
 
-@dp.message(Command("info", "help", "info@PipiMetrBot", "help@PipiMetrBot"))
+@dp.message_handler(commands=["info", "help", "info@PipiMetrBot", "help@PipiMetrBot"])
 async def cmd_info(message: types.Message):
     await message.answer(
         "Команды бота:\n"
@@ -119,9 +118,9 @@ async def cmd_info(message: types.Message):
         "/help — помощь по боту"
     )
 
-@dp.message(Command("dick", "dick@PipiMetrBot"))
+@dp.message_handler(commands=["dick", "dick@PipiMetrBot"])
 async def cmd_dick(message: types.Message):
-    if message.chat.type == ChatType.PRIVATE:
+    if message.chat.type == "private":
         await message.answer("Эта команда работает только в группах. Добавь меня в чат!")
         return
 
@@ -146,7 +145,7 @@ async def cmd_dick(message: types.Message):
         else:
             await message.reply("Ты ещё не начал игру! Используй /dick")
 
-@dp.message(Command("me@PipiMetrBot", "me", "profile", "profile@PipiMetrBot",))
+@dp.message_handler(commands=["me", "me@PipiMetrBot", "profile", "profile@PipiMetrBot"])
 async def cmd_me(message: types.Message):
     row = get_user(message.from_user.id)
     if row:
@@ -171,7 +170,7 @@ async def cmd_me(message: types.Message):
     else:
         await message.answer("Ты ещё не начал игру! Напиши /dick")
 
-@dp.message(Command("stats", "stats@PipiMetrBot"))
+@dp.message_handler(commands=["stats", "stats@PipiMetrBot"])
 async def cmd_stats(message: types.Message):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -189,13 +188,10 @@ async def cmd_stats(message: types.Message):
 
     await message.answer(text)
 
-@dp.message(Command("top", "top@PipiMetrBot"))
+@dp.message_handler(commands=["top", "top@PipiMetrBot"])
 async def cmd_top(message: types.Message):
     await message.answer("🍆 ТОП лучших игроков и чатов (В разработке: @Project_X)", reply_markup=top_keyboard)
 
-async def main():
-    init_db()
-    await dp.start_polling(bot)
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    init_db()
+    executor.start_polling(dp, skip_updates=True)
