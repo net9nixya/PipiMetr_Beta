@@ -10,3 +10,7 @@ top_keyboard = InlineKeyboardMarkup(inline_keyboard=[
 submit_idea_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text="💡 Предложить идею", url="https://t.me/Project_X")]
 ])
+tea_top_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="🧋 Посмотреть топ игроков", callback_data="top_players")],
+    [InlineKeyboardButton(text="💬 Посмотреть топ чатов", callback_data="top_chats")]
+])
